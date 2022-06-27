@@ -173,32 +173,32 @@ app.post('/api/users/:_id/exercises', (req, res) =>{
 })
 
 
-app.get('/api/users/:_id/logs', (req, res, next) => {
-  let { userId, from, to, limit } = req.query;
-  let id = req.params._id;
-  from = moment(from, 'YYYY-MM-DD').isValid() ? moment(from, 'YYYY-MM-DD') : 0;
-  to = moment(to, 'YYYY-MM-DD').isValid() ? moment(to, 'YYYY-MM-DD') : moment().add(1000000000000);
-  UserInfo.findById(id).then(user => {
-      if (!user) throw new Error('Unknown user with _id');
-      ExerciseInfo.find({ userId })
-          .where('date').gte(from).lte(to)
-          .limit(+limit).exec()
-          .then(log => res.status(200).send({
-              _id: userId,
-              username: user.username,
-              count: log.length,
-              log: log.map(o => ({
-                  description: o.description,
-                  duration: o.duration,
-                  date: moment(o).format('ddd MMMM DD YYYY')
-              }))
-          }))
-  })
-      .catch(err => {
-          console.log(err);
-          res.status(500).send(err.message);
-      })
-})
+// app.get('/api/users/:_id/logs', (req, res, next) => {
+//   let { userId, from, to, limit } = req.query;
+//   let id = req.params._id;
+//   from = moment(from, 'YYYY-MM-DD').isValid() ? moment(from, 'YYYY-MM-DD') : 0;
+//   to = moment(to, 'YYYY-MM-DD').isValid() ? moment(to, 'YYYY-MM-DD') : moment().add(1000000000000);
+//   UserInfo.findById(id).then(user => {
+//       if (!user) throw new Error('Unknown user with _id');
+//       ExerciseInfo.find({ userId })
+//           .where('date').gte(from).lte(to)
+//           .limit(+limit).exec()
+//           .then(log => res.status(200).send({
+//               _id: userId,
+//               username: user.username,
+//               count: log.length,
+//               log: log.map(o => ({
+//                   description: o.description,
+//                   duration: o.duration,
+//                   date: moment(o).format('ddd MMMM DD YYYY')
+//               }))
+//           }))
+//   })
+//       .catch(err => {
+//           console.log(err);
+//           res.status(500).send(err.message);
+//       })
+// })
 
 
 app.get('/api/users/:_id/logs', (req, res) => {
@@ -230,17 +230,18 @@ app.get('/api/users/:_id/logs', (req, res) => {
     if(err) {
       console.log(err)
     } else{
-      ExerciseInfo.find((query), null, {limit: limitChecker(+limit)}, (err, data) => {
+      ExerciseInfo.find((query), null, {limit: limitChecker(+limit)}, (err, docs) => {
         let loggedArray = [];
         if (err){
           console.log(err)
         } else {
+
           let documents = docs;
           let loggedArray = documents.map((item) => {
             return {
               "description": item.description,
               "duration": item.duration,
-              "log": item.date.toDateString()
+              "date": item.date.toDateString()
             }
           })
 
@@ -268,6 +269,15 @@ app.get('/api/users/:_id/logs', (req, res) => {
   })
 })
 
+app.get('/api/users', (req,res) => {
+  UserInfo.find({}, (err,data)=>{
+    if (err){
+      res.send("hawww")
+    } else {
+      res.json(data); 
+    }
+  })
+})
 
 
 const listener = app.listen(process.env.PORT || 3000, () => {
